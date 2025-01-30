@@ -4,6 +4,7 @@ import productModel from '../models/productModel.js';
 
 const addProduct = async (req, res) => {
     try {
+        
         const { name, description, price, category, subCategory, sizes, bestseller } = req.body;
         const image1 = req.files.image1 && req.files.image1[0]
         const image2 = req.files.image2 && req.files.image2[0]
@@ -18,6 +19,7 @@ const addProduct = async (req, res) => {
                 return result.secure_url
             })
         )
+        const AdminId = req.user.id
         const productData = {
             name,
             description,
@@ -27,7 +29,8 @@ const addProduct = async (req, res) => {
             bestseller: bestseller === "true" ? true : false,
             sizes: JSON.parse(sizes),
             image: imagesUrl,
-            date: Date.now()
+            date: Date.now(),
+            shopId:AdminId
         }
         const product = new productModel(productData)
         await product.save()
@@ -41,10 +44,11 @@ const addProduct = async (req, res) => {
 
 }
 
-const listProducts = async (req, res) => {
+const listProductsByShop = async (req, res) => {
+    const id = req.user.id
 
     try {
-        const products = await productModel.find({});
+        const products = await productModel.find({shopId:id});
         res.json({ success: true, products })
     } catch (error) {
         console.log(error)
@@ -81,4 +85,4 @@ const singleProduct = async (req, res) => {
 
 }
 
-export { addProduct, listProducts, removeProduct, singleProduct }
+export { addProduct, listProductsByShop, removeProduct, singleProduct }
