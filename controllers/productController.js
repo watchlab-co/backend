@@ -57,6 +57,19 @@ const listProductsByShop = async (req, res) => {
 
 }
 
+const listallProduct = async (req, res) => {
+
+    try {
+        const products = await productModel.find();
+        res.json({ success: true, products })
+    } catch (error) {
+        console.log(error)
+        res.json({ success: false, message: error.message })
+    }
+
+}
+
+
 
 const removeProduct = async (req, res) => {
 
@@ -85,4 +98,4 @@ const singleProduct = async (req, res) => {
 
 }
 
-export { addProduct, listProductsByShop, removeProduct, singleProduct }
+export { addProduct, listProductsByShop, removeProduct, singleProduct ,listallProduct }
