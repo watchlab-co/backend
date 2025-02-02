@@ -18,21 +18,22 @@ connectCloudinary()
 // Middlewares
 app.use(express.json())
 app.use(cors({
-    origin: 'https://admin.watchlab.in', // Allow your frontend domain
-    methods: 'GET, POST, PUT, DELETE, OPTIONS',
-    allowedHeaders: ['Content-Type', 'Authorization', 'token'], // Add 'token' here
+    origin: ['https://admin.watchlab.in', 'https://www.admin.watchlab.in'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'token'],
     credentials: true
 }));
+app.use(express.json());
 
 
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', 'https://admin.watchlab.in');
+    res.setHeader('Access-Control-Allow-Origin', 'https://www.admin.watchlab.in');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, token');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
 
     if (req.method === 'OPTIONS') {
-        return res.sendStatus(200); 
+        return res.sendStatus(200);
     }
 
     next();
