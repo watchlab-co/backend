@@ -17,6 +17,13 @@ connectCloudinary()
 
 // Middlewares
 app.use(express.json())
+app.use(cors({
+    origin: ['https://admin.watchlab.in', 'https://watchlab.in'],
+    methods: 'GET, POST, PUT, DELETE',
+    allowedHeaders: 'Content-Type, Authorization'
+}));
+
+
 app.use(cors())
 
 // API end points
