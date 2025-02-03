@@ -8,49 +8,72 @@ import productRouter from './routes/productRoutes.js';
 import cartRouter from './routes/cartRoutes.js';
 import orderRouter from './routes/orderRoutes.js';
 
-// App config
 const app = express();
 const port = process.env.PORT || 4000;
+
+// Middleware for JSON body parsing
+app.use(express.json());
+
+// Error Handling Middleware
+const errorHandler = (err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({
+        success: false,
+        message: err.message || 'Internal Server Error',
+    });
+};
 
 // Connect to services
 connectDB();
 connectCloudinary();
-app.use(express.json());
 
-// Open CORS configuration - accept all origins
-app.use(cors({
-    origin: ['https://admin.watchlab.in', 'https://www.admin.watchlab.in', 'https://www.watchlab.in', 'https://www.watchlab.in'], 
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'token', 'Origin', 'X-Requested-With', 'Accept'],
-    credentials: true
-}));
+// CORS Configuration - Allowing specific origins
+const allowedOrigins = [
+    'https://admin.watchlab.in',
+    'https://www.admin.watchlab.in',
+    'https://watchlab.in',
+    'https://www.watchlab.in',
+];
 
+app.use(
+    cors({
+        origin: (origin, callback) => {
+            if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+                callback(null, true);
+            } else {
+                callback(new Error('Not Allowed by CORS'), false);
+            }
+        },
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'token', 'Origin', 'X-Requested-With', 'Accept'],
+        credentials: true,
+    })
+);
 
+// Handling Preflight Requests (OPTIONS)
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'https://admin.watchlab.in');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, token, Origin, X-Requested-With, Accept');
-    res.header('Access-Control-Allow-Credentials', 'true');
-
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
-
     next();
 });
 
-
-// API routes
+// API Routes
 app.use('/api/user', userRouter);
 app.use('/api/product', productRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/order', orderRouter);
 
+// Root Route for Health Check
 app.get('/', (req, res) => {
     res.send('API Working');
 });
 
-// Start the server
+// Global Error Handling Middleware
+app.use(errorHandler);
+
+// Start Server
 app.listen(port, () => {
-    console.log('Server started on PORT : ' + port);
+    console.log(`Server started on PORT: ${port}`);
 });
+
