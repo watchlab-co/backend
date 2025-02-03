@@ -15,15 +15,30 @@ const port = process.env.PORT || 4000;
 // Connect to services
 connectDB();
 connectCloudinary();
+app.use(express.json());
 
 // Open CORS configuration - accept all origins
 app.use(cors({
-    origin: '*',  // Allow all origins
+    origin: ['https://admin.watchlab.in', 'https://www.admin.watchlab.in', 'https://www.watchlab.in', 'https://www.watchlab.in'], 
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'token', 'Origin', 'X-Requested-With', 'Accept'],
+    credentials: true
 }));
 
-app.use(express.json());
+
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', 'https://admin.watchlab.in');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, token, Origin, X-Requested-With, Accept');
+    res.header('Access-Control-Allow-Credentials', 'true');
+
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+
+    next();
+});
+
 
 // API routes
 app.use('/api/user', userRouter);
