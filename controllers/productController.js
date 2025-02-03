@@ -46,7 +46,8 @@ const addProduct = async (req, res) => {
 
 const listProductsByShop = async (req, res) => {
     const id = req.user.id
-
+    console.log(id);
+    
     try {
         const products = await productModel.find({shopId:id});
         res.json({ success: true, products })
