@@ -17,17 +17,21 @@ connectCloudinary()
 
 // Middlewares
 app.use(express.json())
+app.options('*', cors());
+
 app.use(cors({
-    origin: ['https://admin.watchlab.in', 'https://www.admin.watchlab.in'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    origin: ['https://www.watchlab.in', 'https://watchlab.in', 'https://www.admin.watchlab.in'],
+    methods: 'GET, POST, PUT, DELETE, OPTIONS',
     allowedHeaders: ['Content-Type', 'Authorization', 'token'],
     credentials: true
 }));
+
+// ✅ Ensure Express can parse JSON
 app.use(express.json());
 
-
+// ✅ Handle Preflight Requests Properly
 app.use((req, res, next) => {
-    res.setHeader('Access-Control-Allow-Origin', 'https://www.admin.watchlab.in');
+    res.setHeader('Access-Control-Allow-Origin', req.headers.origin);  // Dynamic origin
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, token');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -38,7 +42,6 @@ app.use((req, res, next) => {
 
     next();
 });
-
 
 
 app.use(cors())
