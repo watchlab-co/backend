@@ -46,8 +46,6 @@ const addProduct = async (req, res) => {
 
 const listProductsByShop = async (req, res) => {
     const id = req.user.id
-    console.log(id);
-    
     try {
         const products = await productModel.find({shopId:id});
         res.json({ success: true, products })
@@ -55,7 +53,6 @@ const listProductsByShop = async (req, res) => {
         console.log(error)
         res.json({ success: false, message: error.message })
     }
-
 }
 
 const listallProduct = async (req, res) => {
