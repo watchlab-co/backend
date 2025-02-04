@@ -33,7 +33,8 @@ const allowedOrigins = [
     'https://www.admin.watchlab.in',
     'https://watchlab.in',
     'https://www.watchlab.in',
-    "http://localhost:5174"
+    "http://localhost:5174",
+    "http://localhost:5173"
 ];
 
 app.use(

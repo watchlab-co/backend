@@ -4,45 +4,59 @@ import productModel from '../models/productModel.js';
 
 const addProduct = async (req, res) => {
     try {
+        const { name, description, price, discount, category, subCategory, sizes, stock, dialColor, strapMaterial, features, movement, bestseller } = req.body;
 
-        const { name, description, price, category, subCategory, sizes, bestseller } = req.body;
-        const image1 = req.files.image1 && req.files.image1[0]
-        const image2 = req.files.image2 && req.files.image2[0]
-        const image3 = req.files.image3 && req.files.image3[0]
-        const image4 = req.files.image4 && req.files.image4[0]
+        // Get images from request
+        const image1 = req.files.image1 && req.files.image1[0];
+        const image2 = req.files.image2 && req.files.image2[0];
+        const image3 = req.files.image3 && req.files.image3[0];
+        const image4 = req.files.image4 && req.files.image4[0];
 
-        const images = [image1, image2, image3, image4].filter((item) => item !== undefined)
+        // Filter out undefined images
+        const images = [image1, image2, image3, image4].filter((item) => item !== undefined);
 
+        // Upload images to cloudinary
         let imagesUrl = await Promise.all(
             images.map(async (item) => {
-                let result = await cloudinary.uploader.upload(item.path, { resource_type: 'image' })
-                return result.secure_url
+                let result = await cloudinary.uploader.upload(item.path, { resource_type: 'image' });
+                return result.secure_url;
             })
-        )
-        const AdminId = req.user.id
+        );
+
+        const AdminId = req.user.id; // Assuming user authentication middleware adds `req.user`
+
         const productData = {
             name,
             description,
-            category,
             price: Number(price),
+            discount: Number(discount),
+            category,
             subCategory,
-            bestseller: bestseller === "true" ? true : false,
             sizes: JSON.parse(sizes),
+            stock: Number(stock),
+            dialColor,
+            strapMaterial,
+            features: JSON.parse(features),
+            movement,
+            bestseller: bestseller === "true" ? true : false,
             image: imagesUrl,
             date: Date.now(),
             shopId: AdminId
-        }
-        const product = new productModel(productData)
-        await product.save()
+        };
 
-        res.json({ success: true, message: 'Product added' })
+        // Create and save new product
+        const product = new productModel(productData);
+        await product.save();
+
+        res.json({ success: true, message: 'Product added successfully' });
 
     } catch (error) {
-        console.log(error)
-        res.json({ success: false, message: error.message })
+        console.log(error);
+        res.json({ success: false, message: error.message });
     }
+};
 
-}
+export default addProduct;
 
 const listProductsByShop = async (req, res) => {
     const id = req.user.id
@@ -101,13 +115,13 @@ const UpdateProduct = async (req, res) => {
 
     try {
         const { productId } = req.params;
-        const updateData = req.body; 
+        const updateData = req.body;
 
         const updatedProduct = await productModel.findByIdAndUpdate(productId, updateData, {
-            new: true,  
+            new: true,
             runValidators: true
         });
-        
+
         if (!updatedProduct) {
             return res.status(404).json({ success: false, message: 'Product not found' });
         }
