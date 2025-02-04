@@ -4,7 +4,7 @@ import productModel from '../models/productModel.js';
 
 const addProduct = async (req, res) => {
     try {
-        
+
         const { name, description, price, category, subCategory, sizes, bestseller } = req.body;
         const image1 = req.files.image1 && req.files.image1[0]
         const image2 = req.files.image2 && req.files.image2[0]
@@ -30,7 +30,7 @@ const addProduct = async (req, res) => {
             sizes: JSON.parse(sizes),
             image: imagesUrl,
             date: Date.now(),
-            shopId:AdminId
+            shopId: AdminId
         }
         const product = new productModel(productData)
         await product.save()
@@ -47,7 +47,7 @@ const addProduct = async (req, res) => {
 const listProductsByShop = async (req, res) => {
     const id = req.user.id
     try {
-        const products = await productModel.find({shopId:id});
+        const products = await productModel.find({ shopId: id });
         res.json({ success: true, products })
     } catch (error) {
         console.log(error)
@@ -84,8 +84,9 @@ const removeProduct = async (req, res) => {
 const singleProduct = async (req, res) => {
 
     try {
+        const { productId } = req.params
+        console.log(productId);
 
-        const { productId } = req.body
         const product = await productModel.findById(productId)
         res.json({ success: true, product })
 
@@ -96,4 +97,28 @@ const singleProduct = async (req, res) => {
 
 }
 
-export { addProduct, listProductsByShop, removeProduct, singleProduct ,listallProduct }
+const UpdateProduct = async (req, res) => {
+
+    try {
+        const { productId } = req.params;
+        const updateData = req.body; 
+
+        const updatedProduct = await productModel.findByIdAndUpdate(productId, updateData, {
+            new: true,  
+            runValidators: true
+        });
+        
+        if (!updatedProduct) {
+            return res.status(404).json({ success: false, message: 'Product not found' });
+        }
+
+        res.json({ success: true, message: 'Product updated successfully', product: updatedProduct });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+
+}
+
+export { addProduct, listProductsByShop, UpdateProduct, removeProduct, singleProduct, listallProduct }
