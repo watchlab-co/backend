@@ -11,25 +11,7 @@ import orderRouter from './routes/orderRoutes.js';
 const app = express();
 const port = process.env.PORT || 4000;
 
-// Middleware for JSON body parsing
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({ limit: "50mb", extended: true }));
-
-
-// Error Handling Middleware
-const errorHandler = (err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({
-        success: false,
-        message: err.message || 'Internal Server Error',
-    });
-};
-
-// Connect to services
-connectDB();
-connectCloudinary();
-
-// CORS Configuration - Allowing specific origins
+// ✅ Fix: Proper CORS setup
 const allowedOrigins = [
     'https://admin.watchlab.in',
     'https://www.admin.watchlab.in',
@@ -41,32 +23,23 @@ const allowedOrigins = [
 
 app.use(
     cors({
-        origin: (origin, callback) => {
-            if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
-                callback(null, true);
-            } else {
-                callback(new Error('Not Allowed by CORS'), false);
-            }
-        },
+        origin: allowedOrigins,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization', 'token', 'Origin', 'X-Requested-With', 'Accept'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'token'],
         credentials: true,
     })
 );
 
-// Handling Preflight Requests (OPTIONS)
-app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, token, Origin, X-Requested-With, Accept");
-    res.header("Access-Control-Allow-Credentials", "true");
+// ✅ Fix: Ensure preflight requests (OPTIONS) are handled
+app.options('*', cors()); 
 
-    if (req.method === "OPTIONS") {
-        return res.sendStatus(200);
-    }
-    next();
-});
+// Middleware for JSON body parsing
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+// Connect to services
+connectDB();
+connectCloudinary();
 
 // API Routes
 app.use('/api/user', userRouter);
@@ -79,11 +52,7 @@ app.get('/', (req, res) => {
     res.send('API Working');
 });
 
-// Global Error Handling Middleware
-app.use(errorHandler);
-
 // Start Server
 app.listen(port, () => {
     console.log(`Server started on PORT: ${port}`);
 });
-
