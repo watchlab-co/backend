@@ -7,6 +7,7 @@ import userRouter from './routes/userRoutes.js';
 import productRouter from './routes/productRoutes.js';
 import cartRouter from './routes/cartRoutes.js';
 import orderRouter from './routes/orderRoutes.js';
+import shopeRouter from './routes/shopRouter.js';
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -54,6 +55,7 @@ app.use('/api/user', userRouter);
 app.use('/api/product', productRouter);
 app.use('/api/cart', cartRouter);
 app.use('/api/order', orderRouter);
+app.use('/api/shop', shopeRouter);
 
 // Root Route for Health Check
 app.get('/', (req, res) => {
