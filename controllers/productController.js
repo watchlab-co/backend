@@ -5,7 +5,8 @@ import productModel from '../models/productModel.js';
 const addProduct = async (req, res) => {
     try {
         const { name, description, price, discount, category, subCategory, sizes, stock, dialColor, strapMaterial, features, movement, bestseller } = req.body;
-
+        
+        
         // Get images from request
         const image1 = req.files.image1 && req.files.image1[0];
         const image2 = req.files.image2 && req.files.image2[0];
@@ -22,6 +23,7 @@ const addProduct = async (req, res) => {
                 return result.secure_url;
             })
         );
+        const parsedStock = stock === "Yes" ? true : false;
 
         const AdminId = req.user.id; // Assuming user authentication middleware adds `req.user`
 
@@ -33,8 +35,7 @@ const addProduct = async (req, res) => {
             category,
             subCategory,
             sizes: JSON.parse(sizes),
-            stock: Number(stock),
-            dialColor,
+            stock: parsedStock,
             strapMaterial,
             features: JSON.parse(features),
             movement,
