@@ -11,7 +11,7 @@ import orderRouter from './routes/orderRoutes.js';
 const app = express();
 const port = process.env.PORT || 4000;
 
-// ✅ Fix: Correct CORS setup
+// ✅ CORS configuration - Allow specific origins and methods
 const allowedOrigins = [
     'https://admin.watchlab.in',
     'https://www.admin.watchlab.in',
@@ -21,9 +21,11 @@ const allowedOrigins = [
     'http://localhost:5173'
 ];
 
+// CORS middleware should be applied **before routes** are defined
 app.use(
     cors({
         origin: function (origin, callback) {
+            // Allow requests without an origin (e.g., from Postman or curl)
             if (!origin || allowedOrigins.includes(origin)) {
                 callback(null, true);
             } else {
@@ -32,28 +34,18 @@ app.use(
         },
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization', 'token'],
-        credentials: true,
+        credentials: true, // Allow credentials such as cookies
     })
 );
 
-// ✅ Fix: Ensure preflight (`OPTIONS`) requests are handled correctly
-app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, token");
-    res.header("Access-Control-Allow-Credentials", "true");
+// ✅ Preflight request handler (OPTIONS)
+app.options('*', cors());
 
-    if (req.method === "OPTIONS") {
-        return res.sendStatus(200);
-    }
-    next();
-});
-
-// Middleware for JSON body parsing (Fix 413 Error)
+// Middleware for JSON body parsing
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// Connect to services
+// Connect to services (MongoDB, Cloudinary)
 connectDB();
 connectCloudinary();
 
