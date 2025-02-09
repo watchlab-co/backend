@@ -4,7 +4,7 @@ import productModel from '../models/productModel.js';
 
 const addProduct = async (req, res) => {
     try {
-        const { name, description, price, discount, category, subCategory, sizes, stock, dialColor, strapMaterial, features, movement, bestseller } = req.body;
+        const { name, description, price, discount, category, subCategory, colours, stock, dialColor, strapMaterial, features, movement, bestseller } = req.body;
         
         
         // Get images from request
@@ -34,7 +34,7 @@ const addProduct = async (req, res) => {
             discount: Number(discount),
             category,
             subCategory,
-            sizes: JSON.parse(sizes),
+            colours: JSON.parse(colours),
             stock: parsedStock,
             strapMaterial,
             features: JSON.parse(features),
@@ -116,6 +116,8 @@ const UpdateProduct = async (req, res) => {
     try {
         const { productId } = req.params;
         const updateData = req.body;
+
+        
 
         const updatedProduct = await productModel.findByIdAndUpdate(productId, updateData, {
             new: true,
