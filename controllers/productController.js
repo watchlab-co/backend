@@ -71,16 +71,14 @@ const listProductsByShop = async (req, res) => {
 }
 
 const listallProduct = async (req, res) => {
-
     try {
-        const products = await productModel.find();
-        res.json({ success: true, products })
+        const products = await productModel.find().sort({ createdAt: -1 });
+        res.json({ success: true, products });
     } catch (error) {
-        console.log(error)
-        res.json({ success: false, message: error.message })
+        console.log(error);
+        res.json({ success: false, message: error.message });
     }
-
-}
+};
 
 
 
