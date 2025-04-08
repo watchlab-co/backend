@@ -1,46 +1,85 @@
 import { v2 as cloudinary } from 'cloudinary'
 import productModel from '../models/productModel.js';
+import ffmpeg from "fluent-ffmpeg";
+import path from "path";
+import fs from "fs";
 
+
+// Compress video function
+const compressVideo = (inputPath, outputPath) => {
+    return new Promise((resolve, reject) => {
+        ffmpeg(inputPath)
+            .outputOptions([
+                "-preset veryfast",
+                "-crf 28", // quality: lower means better quality but bigger file
+                "-c:v libx264",
+                "-c:a aac"
+            ])
+            .save(outputPath)
+            .on("end", () => resolve(outputPath))
+            .on("error", (err) => reject(err));
+    });
+};
 
 const addProduct = async (req, res) => {
     try {
-        const { name, description, price, discount, category, subCategory, colours, stock, dialColor, strapMaterial, features, movement, bestseller } = req.body;
+        const {
+            name, description, price, discount, category,
+            subCategory, colours, stock, dialColor, strapMaterial,
+            features, movement, bestseller
+        } = req.body;
 
+        // Get files
+        const image1 = req.files.image1?.[0];
+        const image2 = req.files.image2?.[0];
+        const image3 = req.files.image3?.[0];
+        const image4 = req.files.image4?.[0];
+        const video = req.files.video?.[0];
 
+        const images = [image1, image2, image3, image4].filter(Boolean);
 
-        // Get images from request
-        const image1 = req.files.image1 && req.files.image1[0];
-        const image2 = req.files.image2 && req.files.image2[0];
-        const image3 = req.files.image3 && req.files.image3[0];
-        const image4 = req.files.image4 && req.files.image4[0];
-        const video = req.files.video && req.files.video?.[0];
-
-        // Filter out undefined images
-        const images = [image1, image2, image3, image4].filter((item) => item !== undefined);
-
-         // Upload images to cloudinary
-         let imagesUrl = await Promise.all(
+        // Upload images
+        const imagesUrl = await Promise.all(
             images.map(async (item) => {
-                let result = await cloudinary.uploader.upload(item.path, { resource_type: 'image' });
+                const result = await cloudinary.uploader.upload(item.path, {
+                    resource_type: "image"
+                });
+                fs.unlinkSync(item.path); // clean up temp file
                 return result.secure_url;
             })
         );
 
-         // Filter out undefined images
-         const videos = [video].filter((item) => item !== undefined);
+        let videoUrl = [];
+        if (video) {
+            if (video.size > 10 * 1024 * 1024) {
+                const tempOutputPath = path.join("uploads", `compressed_${Date.now()}.mp4`);
+                await compressVideo(video.path, tempOutputPath);
 
-         // Upload images to cloudinary
-         let videoUrl = await Promise.all(
-            videos.map(async (item) => {
-                let result = await cloudinary.uploader.upload(item.path, { resource_type: 'video' });
-                return result.secure_url;
-            })
-        );
-    
-        
+                const compressedStats = fs.statSync(tempOutputPath);
+                if (compressedStats.size > 10 * 1024 * 1024) {
+                    throw new Error("Compressed video still exceeds 10MB. Try uploading a smaller file.");
+                }
+
+                const result = await cloudinary.uploader.upload(tempOutputPath, {
+                    resource_type: "video"
+                });
+                videoUrl.push(result.secure_url);
+
+                // Clean up
+                fs.unlinkSync(video.path);
+                fs.unlinkSync(tempOutputPath);
+            } else {
+                // Direct upload if under 10MB
+                const result = await cloudinary.uploader.upload(video.path, {
+                    resource_type: "video"
+                });
+                videoUrl.push(result.secure_url);
+                fs.unlinkSync(video.path);
+            }
+        }
+
         const parsedStock = stock === "Yes" ? true : false;
-
-        const AdminId = req.user.id; // Assuming user authentication middleware adds `req.user`
+        const AdminId = req.user.id;
 
         const productData = {
             name,
@@ -54,14 +93,13 @@ const addProduct = async (req, res) => {
             strapMaterial,
             features: JSON.parse(features),
             movement,
-            bestseller: bestseller === "true" ? true : false,
+            bestseller: bestseller === "true",
             image: imagesUrl,
             video: videoUrl,
             date: Date.now(),
             shopId: AdminId
         };
 
-        // Create and save new product
         const product = new productModel(productData);
         await product.save();
 

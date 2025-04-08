@@ -5,7 +5,6 @@ import razorpay from 'razorpay'
 import dotenv from 'dotenv';
 dotenv.config();  // This loads the environment variables from .env file
 
-console.log(process.env.STRIPE_SECRET_KEY);
 
 // Global variables
 const currency = 'inr'
