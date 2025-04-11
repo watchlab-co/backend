@@ -17,9 +17,10 @@ const allowedOrigins = [
     'https://admin.watchlab.in',
     'https://www.admin.watchlab.in',
     'https://watchlab.in',
-    "https://www.watchlab.in/",
+    'https://www.watchlab.in',
     'http://localhost:5173'
 ];
+
 
 // CORS middleware should be applied **before routes** are defined
 app.use(
