@@ -17,7 +17,6 @@ const allowedOrigins = [
     'https://admin.watchlab.in',
     'https://www.admin.watchlab.in',
     'https://watchlab.in',
-    'https://www.watchlab.in',
     "https://www.watchlab.in/",
     'http://localhost:5173'
 ];
