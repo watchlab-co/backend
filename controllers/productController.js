@@ -101,6 +101,10 @@ const addProduct = async (req, res) => {
             shopId: AdminId
         };
 
+        console.log('====================================');
+        console.log('Product Data:', productData);
+        console.log('====================================');
+
         const product = new productModel(productData);
         await product.save();
 
