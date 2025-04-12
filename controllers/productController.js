@@ -49,6 +49,9 @@ const addProduct = async (req, res) => {
             })
         );
 
+        console.log('====================================');
+        console.log('Images URL:', imagesUrl); 
+        console.log('====================================');
         let videoUrl = [];
         if (video) {
             if (video.size > 10 * 1024 * 1024) {
