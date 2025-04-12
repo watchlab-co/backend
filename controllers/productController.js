@@ -26,7 +26,7 @@ const addProduct = async (req, res) => {
         const {
             name, description, price, discount, category,
             subCategory, colours, stock, dialColor, strapMaterial,
-            features, movement, bestseller
+            features, movement, bestseller , productDate
         } = req.body;
 
         // Get files
@@ -97,6 +97,7 @@ const addProduct = async (req, res) => {
             image: imagesUrl,
             video: videoUrl,
             date: Date.now(),
+            WPdate: productDate,
             shopId: AdminId
         };
 

@@ -17,6 +17,7 @@ const productSchema = new mongoose.Schema({
     strapMaterial: { type: String, required: true },
     features: { type: Array, required: true },
     movement: { type: String, required: true },
+    WPdate: { type: String },
     shopId: { type: mongoose.Schema.Types.ObjectId, ref: "admin", required: true }
 }, { minimize: false });
 
