@@ -29,12 +29,21 @@ const addProduct = async (req, res) => {
             features, movement, bestseller , productDate
         } = req.body;
 
+        console.log('====================================');
+        console.log('Request Body:', req.body);
+        console.log('====================================');
+
         // Get files
         const image1 = req.files.image1?.[0];
         const image2 = req.files.image2?.[0];
         const image3 = req.files.image3?.[0];
         const image4 = req.files.image4?.[0];
         const video = req.files.video?.[0];
+
+        console.log('====================================');
+        console.log('Files:', {
+            image1, image2, image3, image4, video});
+        console.log('====================================');
 
         const images = [image1, image2, image3, image4].filter(Boolean);
 
