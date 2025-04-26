@@ -13,6 +13,7 @@ orderRouter.post('/status', adminAuth, updateStatus)
 orderRouter.post('/place', authUser, placeOrder) // cod place order
 orderRouter.post('/razorpay', authUser, placeOrderRazorpay)
 orderRouter.post('/stripe', authUser, placeOrderStripe)
+
 orderRouter.post('/cashfree', authUser, PlaceOrderCashfree)
 orderRouter.post('/verifyCashfree', authUser, verifyCashfree)
 

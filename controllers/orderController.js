@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 dotenv.config();  // This loads the environment variables from .env file
 import { Cashfree } from "cashfree-pg";
 import axios from "axios";
+import mongoose from "mongoose";
 
 
 // Global variables
@@ -240,6 +241,7 @@ const PlaceOrderCashfree = async (req, res) => {
             items,
             amount,
             address,
+            paymentStatus: 'PENDING',
             status: 'Order Placed',
             paymentMethod: 'Cashfree',
             payment: false,
@@ -265,7 +267,7 @@ const PlaceOrderCashfree = async (req, res) => {
 
         // Using direct axios call instead of SDK
         const response = await axios.post(
-            'https://sandbox.cashfree.com/pg/orders', // Use sandbox for testing
+            'https://api.cashfree.com/pg/orders', // Use sandbox for testing
             payload,
             {
                 headers: {
@@ -276,6 +278,9 @@ const PlaceOrderCashfree = async (req, res) => {
                 }
             }
         );
+        console.log('====================================');
+        console.log(response);
+        console.log('====================================');
 
         res.status(200).json({ success: true, order: response.data });
 
@@ -299,27 +304,24 @@ const verifyCashfree = async (req, res) => {
             });
         }
 
-
         // Get user ID from the authentication token
         const userId = req.user.id;
 
         // Find the order in your database
         const order = await orderModel.findOne({
-            orderId: orderId,
-            user: userId
+            _id: orderId,
+            userId: userId
         });
 
-        console.log('====================================');
-        // console.log('Order:', order);
-        console.log('Order:', userId);
-        console.log('====================================');
+        // Check if the order exists
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: "Order not found"
+            });
+        }
 
-        // if (!order) {
-        //     return res.status(404).json({
-        //         success: false,
-        //         message: "Order not found"
-        //     });
-        // }
+
 
         // Fetch payment status from Cashfree API
         // const cashfreeApiUrl = process.env.CASHFREE_MODE === 'production'
@@ -327,7 +329,7 @@ const verifyCashfree = async (req, res) => {
         //     : 'https://sandbox.cashfree.com/pg/orders/';
 
         const response = await axios.get(
-            `https://sandbox.cashfree.com/pg/orders/${orderId}`,
+            `https://api.cashfree.com/pg/orders/${orderId}`,
             {
                 headers: {
                     'x-client-id': process.env.CASHFREE_CLIENT_ID,
@@ -337,29 +339,44 @@ const verifyCashfree = async (req, res) => {
                 }
             }
         );
+
         const paymentData = response.data;
     
         // Check payment status
         if (paymentData.order_status === "PAID") {
             // Payment successful
-            // save to DB
+            const orderUpdate = await orderModel.findByIdAndUpdate(orderId, {
+                paymentStatus: 'PAID',
+                payment: true,
+                paymentMethod: 'Cashfree',
+                paymentDetails: {
+                    paymentId: paymentData.cf_payment_id || null,
+                    paymentMode: paymentData.payment_method?.type || null,
+                    paymentTime: new Date(),
+                    transactionId: paymentData.cf_order_id,
+                    paymentData: paymentData
+                },
+                status: 'Order verified'
+            }, { new: true });
 
             return res.status(200).json({
                 success: true,
                 message: "Payment verified successfully",
             });
         } else {
-            // Payment failed or pending
-            order.paymentStatus = paymentData.order_status.toLowerCase();
-            order.paymentDetails = {
-                paymentId: paymentData.cf_payment_id || null,
-                paymentMode: paymentData.payment_method?.type || null,
-                paymentTime: new Date(),
-                transactionId: paymentData.cf_order_id,
-                paymentData: paymentData
-            };
-
-            await order.save();
+            const errorOrder = await orderModel.findByIdAndUpdate(orderId, {
+                paymentStatus: 'FAILED',
+                payment: true,
+                paymentMethod: 'Cashfree',
+                paymentDetails: {
+                    paymentId: paymentData.cf_payment_id || null,
+                    paymentMode: paymentData.payment_method?.type || null,
+                    paymentTime: new Date(),
+                    transactionId: paymentData.cf_order_id,
+                    paymentData: paymentData
+                },
+                status: 'Order failed'
+            }, { new: true });
 
             return res.status(200).json({
                 success: false,
