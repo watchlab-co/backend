@@ -12,6 +12,7 @@ const getShop = async (req, res) => {
             }
             return res.json(shop);
         } else {
+            
             const shops = await shopModel.find();
             return res.json(shops);
         }

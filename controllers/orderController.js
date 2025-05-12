@@ -258,9 +258,9 @@ const PlaceOrderCashfree = async (req, res) => {
             order_currency: "INR",
             customer_details: {
                 customer_id: userId,
-                customer_name: address.firstName || "Shamil",
-                customer_email: address.email || "shamilamiyan@gmail.com",
-                customer_phone: "+919090407368"
+                customer_name: address.firstName || "None",
+                customer_email: address.email || "No@gmail.com",
+                customer_phone: address.phone || "0000000000",
             }
         };
 
